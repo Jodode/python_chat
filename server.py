@@ -3,15 +3,18 @@ import time
 from threading import *
 
 class Server(object):
-    def __init__(self, max_connections=100, host="", port=31337):
+    def __init__(self, max_connections=100, host="127.0.0.1", port=31337, port_list=60606):
         self.max_connections = max_connections
         self.host = host
         self.port = port
+        self.port_list = port_list
         self.list_of_clients = []
 
     def open_server(self):
-        self.sock = socket.socket()
-        self.sock.bind((self.host, self.port))
+        self.sock_read = socket.socket()
+        self.sock_read.bind(("", self.port_list))
+        self.sock_write = socket.socket()
+        self.sock_write.connect((self.host, self.port))
         self.sock.listen(self.max_connections)
 
     
@@ -38,7 +41,7 @@ class Server(object):
                     msg = conn.recv(2048)
                     if msg:
                         print("<" + addr[0] + ">", msg.decode()[:-1])
-                        msg_to_send = "<" + addr[0] + "> " + message
+                        msg_to_send = "<" + addr[0] + "> " + msg
                         broadcast(msg_to_send, conn, addr)
                     else:
                         remove_conn(conn)
